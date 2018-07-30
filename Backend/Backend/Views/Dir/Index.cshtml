@@ -1,0 +1,96 @@
+﻿@using Backend.Models.Entities;
+@model IEnumerable<Backend.Models.Entities.Catalog>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "_layout";
+}
+
+
+@if (ViewData["id"].Equals("non"))
+{
+    <p>
+        <a>Самый родительский каталог</a>
+    </p>
+    <p>
+        <a>Выебрите каталог</a>
+    </p>
+    <ol>
+        @foreach (var item in Model)
+        {
+            <li>
+                <a href="~/Dir/Edit/@item.Id">@item.Title</a>
+            </li>
+        }
+    </ol>
+}
+else
+{
+
+    Catalog catalog = null;
+    foreach (var t in Model)
+    {
+        if (t.Id.Equals(ViewData["id"]))
+        {
+            catalog = t;
+            break;
+        }
+    }
+    string parr = "";
+    if (catalog.ParentCatalog != null)
+    {
+        parr = catalog.ParentCatalogId;
+    }
+
+    <a href="~/Dir/Index/@parr">Вернуться в родительский каталог</a>
+    <h2>Дочерние каталоги</h2>
+    @foreach (var t in catalog.ChildCatalogs)
+    {
+        <ol>
+            <li>
+                <a href="~/Dir/Index/@t.Id">@t.Title</a>
+            </li>
+        </ol>
+    }
+
+    <h2>Текущий каталог: @catalog.Title</h2>
+    @foreach (var mes in catalog.Messages)
+    {
+        <h4>@mes.Subject</h4>
+        <p style="color:orange">@mes.Text</p>
+    }
+}
+@*<table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                    Id
+                </th>
+                <th>
+                    Messages
+                </th>
+
+            </tr>
+        </thead>
+        <tbody>
+    @foreach (var item in Model) {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ParentCatalog.Id)
+                </td>
+                <td>
+                    @foreach(var m in item.Messages)
+                    {
+                    <p style="color:orange;">Subject: @m.Subject</p>
+                    }
+                </td>
+            </tr>
+    }
+        </tbody>
+    </table>*@
