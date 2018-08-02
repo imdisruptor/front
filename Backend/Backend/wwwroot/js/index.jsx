@@ -1,27 +1,32 @@
-﻿var accessToken;
-var id;
-var id2;
-
-class Index extends React.Component { 
+﻿class Index extends React.Component { 
     constructor(props) {
         super(props);
-        this.state = { accessToken: "" };
-        this.updateData = this.updateData.bind(this);
+        this.state = { accessToken: "", messagesId: [], catalogsId: [] };
     }
 
     updateData = (value) => {
-        this.setState({ accessToken: value})
+        this.setState({ accessToken: value });
+    }
+
+    addMessageId = (value) => {
+        this.state.messagesId.push(value);
+    }
+
+    addCatalogId = (value) => {
+        this.state.catalogsId.push(value);
     }
 
     render() {
         return (
             <div>
                 <Auth update={this.updateData} />
-                <CreateCatalogs accessToken={this.state.accessToken} />
-                <ChangeCatalogs accessToken={this.state.accessToken} />
-                <CreateMessages accessToken={this.state.accessToken} />
-                <DeleteMessages accessToken={this.state.accessToken} />
-                <ReadMessages accessToken={this.state.accessToken} />
+                <CreateCatalogs addCatalog={this.addCatalogId} addMessage={this.addMessageId} accessToken={this.state.accessToken} message={this.state.messagesId} catalog={this.state.catalogsId} />
+                <ChangeCatalogs addCatalog={this.addCatalogId} addMessage={this.addMessageId} accessToken={this.state.accessToken} message={this.state.messagesId} catalog={this.state.catalogsId} />
+                <CreateMessages addCatalog={this.addCatalogId} addMessage={this.addMessageId} accessToken={this.state.accessToken} message={this.state.messagesId} catalog={this.state.catalogsId} />
+                <DeleteMessages addCatalog={this.addCatalogId} addMessage={this.addMessageId} accessToken={this.state.accessToken} message={this.state.messagesId} catalog={this.state.catalogsId} />
+                <ReadMessages addCatalog={this.addCatalogId} addMessage={this.addMessageId} accessToken={this.state.accessToken} message={this.state.messagesId} catalog={this.state.catalogsId} />
+                <ReadCatalogs addCatalog={this.addCatalogId} addMessage={this.addMessageId} accessToken={this.state.accessToken} message={this.state.messagesId} catalog={this.state.catalogsId} />
+                <DeleteCatalogs addCatalog={this.addCatalogId} addMessage={this.addMessageId} accessToken={this.state.accessToken} message={this.state.messagesId} catalog={this.state.catalogsId} />
             </div>);
     }
 }
@@ -30,18 +35,13 @@ class Auth extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = { mail: "ministoir@gmail.com", pass: "P_assword1", name: "" };
-        var token;
+        this.state = { status: "Вы не авторизованы", mail: "ministoir@gmail.com", pass: "P_assword1", name: "", accessToken: "" };
+        var token="";
         this.handleSubmit = this.handleSubmit.bind(this);
         this.onChangeMail = this.onChangeMail.bind(this);
         this.onChangePass = this.onChangePass.bind(this);
+        this.auth = this.auth.bind(this);
         this.autho = this.autho.bind(this);
-    }
-
-    changeData = () => {
-        alert(token);
-        this.props.update(token);
-        alert(2);
     }
 
     handleSubmit(e) {
@@ -59,39 +59,46 @@ class Auth extends React.Component {
         this.setState({ pass: val });
     }
 
+    auth(e) {
+        this.autho(e);
+        this.props.update(token);
+        if (token != "") this.setState({ status: "Вы авторизованы" });
+    }
+
     autho(e) {
         var json = JSON.stringify({ email: this.state.mail, password: this.state.pass }, null, ' ');
         var request = new XMLHttpRequest();
-        request.open("POST", "http://localhost:57059/api/v1/token");
+        request.open("POST", "http://localhost:57059/api/v1/token",false);
         request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
                 var temp = JSON.parse(request.responseText).accessToken;
                 token = temp;
-                this.changeData;
-                accessToken = temp; // ????????
-                document.getElementById('token').value = temp;
             }
         }
         request.send(json);
     }
-
+    
     render() {
         return (
             <div>
+                <h2>Авторизация {this.state.status}</h2>
                 <input type="text"
                     value={this.state.mail}
                     onChange={this.onChangeMail} />
                 <input type="text"
                     value={this.state.pass}
                     onChange={this.onChangePass} />
-                <button onClick={this.autho}> Enter </button>
-                <input id="token" type="text"
-                    value={this.state.name} />
+                <button onClick={this.auth}> Enter </button>
             </div>
         );
     }
 }
+/*
+                 <input id="token" type="text"
+                      value={this.state.name} />
+*/
+
 
 class CreateCatalogs extends React.Component {
 
@@ -123,7 +130,7 @@ class CreateCatalogs extends React.Component {
         var json = JSON.stringify({ title: this.state.title, parentscatalogid: this.state.pid }, null, ' ');
         var request = new XMLHttpRequest();
         request.open("POST", "http://localhost:57059/api/v1/catalogs");
-        request.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        request.setRequestHeader('Authorization', 'Bearer ' + this.props.accessToken);
         request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 201) {
@@ -131,7 +138,8 @@ class CreateCatalogs extends React.Component {
                 document.getElementById('id0').value = temp;
                 document.getElementById('id').value = temp;
                 document.getElementById('id4').value = temp;
-                id = temp;//?????
+                document.getElementById('id10').value = temp;
+                document.getElementById('id12').value = temp;
             }
         }
         request.send(json);
@@ -140,10 +148,12 @@ class CreateCatalogs extends React.Component {
     render() {
         return (
             <div>
+                <h2>Создание каталога</h2>
                 <input type="text"
                     value={this.state.title}
                     onChange={this.onChangeTitle} />
                 <input type="text"
+                    placeholder="catalog's id"
                     value={this.state.pid}
                     onChange={this.onChangePID} />
                 <button onClick={this.createCatalog}> Enter </button>
@@ -153,6 +163,11 @@ class CreateCatalogs extends React.Component {
         );
     }
 }
+/*
+                <input id="id" type="text"
+                    value={this.state.name} />
+*/
+
 
 class ChangeCatalogs extends React.Component {
 
@@ -172,19 +187,19 @@ class ChangeCatalogs extends React.Component {
 
     onChangeID(e) {
         var val = e.target.value;
-        this.setState({ id: val });
+        this.setState(prevState => ({ id: val }));
     }
 
     onChangeText(e) {
         var val = e.target.value;
-        this.setState({ text: val });
+        this.setState(prevState => ({ text: val }));
     }
 
     changeCatalog(e) {
         var json = JSON.stringify({ title: this.state.text}, null, ' ');
         var request = new XMLHttpRequest();
         request.open("PUT", "http://localhost:57059/api/v1/catalogs/" + this.state.id);
-        request.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        request.setRequestHeader('Authorization', 'Bearer ' + this.props.accessToken);
         request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
@@ -248,7 +263,7 @@ class CreateMessages extends React.Component {
         var json = JSON.stringify({ subject: this.state.subject, catalogid: this.state.catalogid, title: this.state.text }, null, ' ');
         var request = new XMLHttpRequest();
         request.open("POST", "http://localhost:57059/api/v1/messages/");
-        request.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        request.setRequestHeader('Authorization', 'Bearer ' + this.props.accessToken);
         request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 201) {
@@ -259,7 +274,7 @@ class CreateMessages extends React.Component {
                 document.getElementById('id6').value = temp;
                 document.getElementById('id8').value = temp;
                 id2 = temp;
-            } else alert(request.status);
+            }
         }
         request.send(json);
     }
@@ -307,11 +322,11 @@ class DeleteMessages extends React.Component {
     createMessage(e) {
         var request = new XMLHttpRequest();
         request.open("DELETE", "http://localhost:57059/api/v1/messages/" + this.state.messageid);
-        request.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        request.setRequestHeader('Authorization', 'Bearer ' + this.props.accessToken);
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
                 document.getElementById('id5').value = 'Deleted';
-            } else alert(request.status);
+            }
         }
         request.send();
     }
@@ -353,12 +368,12 @@ class ReadMessages extends React.Component {
     readMessage(e) {
         var request = new XMLHttpRequest();
         request.open("GET", "http://localhost:57059/api/v1/messages/" + this.state.messageid);
-        request.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        request.setRequestHeader('Authorization', 'Bearer ' + this.props.accessToken);
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
                 var temp = JSON.parse(request.responseText).subject;
                 document.getElementById('id7').value = temp;
-            } else alert(request.status);
+            }
         }
         request.send();
     }
@@ -372,6 +387,99 @@ class ReadMessages extends React.Component {
                     onChange={this.onChangeID} />
                 <button onClick={this.readMessage}> Enter </button>
                 <input id="id7" type="text"
+                    value={this.state.name} />
+            </div>
+        );
+    }
+}
+
+class ReadCatalogs extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { catalogid: "", name: "" };
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.onChangeID = this.onChangeID.bind(this);
+        this.readCatalog = this.readCatalog.bind(this);
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        alert("Имя: " + this.state.name);
+    }
+
+    onChangeID(e) {
+        var val = e.target.value;
+        this.setState({ catalogid: val });
+    }
+
+    readCatalog(e) {
+        var request = new XMLHttpRequest();
+        request.open("GET", "http://localhost:57059/api/v1/catalogs/" + this.state.catalogid);
+        request.setRequestHeader('Authorization', 'Bearer ' + this.props.accessToken);
+        request.onreadystatechange = function () {
+            if (request.readyState == 4 && request.status == 200) {
+                var temp = JSON.parse(request.responseText).title;
+                document.getElementById('id9').value = temp;
+            } else alert(request.status);
+        }
+        request.send();
+    }
+
+    render() {
+        return (
+            <div>
+                <input type="text"
+                    id="id10"
+                    value={this.state.catalogid}
+                    onChange={this.onChangeID} />
+                <button onClick={this.readCatalog}> Enter </button>
+                <input id="id9" type="text"
+                    value={this.state.name} />
+            </div>
+        );
+    }
+}
+
+class DeleteCatalogs extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { catalogid: "", name: "" };
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.onChangeID = this.onChangeID.bind(this);
+        this.deleteCatalog = this.deleteCatalog.bind(this);
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        alert("Имя: " + this.state.name);
+    }
+
+    onChangeID(e) {
+        var val = e.target.value;
+        this.setState({ catalogid: val });
+    }
+
+    deleteCatalog(e) {
+        var request = new XMLHttpRequest();
+        request.open("DELETE", "http://localhost:57059/api/v1/catalogs/" + this.state.catalogid);
+        request.setRequestHeader('Authorization', 'Bearer ' + this.props.accessToken);
+        request.onreadystatechange = function () {
+            if (request.readyState == 4 && request.status == 200) {
+                document.getElementById('id11').value = 'Catalog was deleted';
+            }
+        }
+        request.send();
+    }
+
+    render() {
+        return (
+            <div>
+                <input type="text"
+                    id="id12"
+                    value={this.state.catalogid}
+                    onChange={this.onChangeID} />
+                <button onClick={this.deleteCatalog}> Enter </button>
+                <input id="id11" type="text"
                     value={this.state.name} />
             </div>
         );

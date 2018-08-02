@@ -111,11 +111,12 @@ namespace Backend
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseDeveloperExceptionPage();
+
             app.UseCors(build => {
                 build.AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowAnyOrigin()
-                .AllowCredentials();
+                .AllowAnyOrigin();
             });
             app.UseExceptionHandler(errorApp =>
             {
